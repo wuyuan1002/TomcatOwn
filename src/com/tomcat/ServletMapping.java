@@ -1,43 +1,27 @@
 package com.tomcat;
 
 /**
+ * 存储要访问的servlet的信息的实体类
+ *
  * @author wuyuan
  * @version 1.0
- * @description 描述:存储要访问的servlet的信息的实体类
  * @date 2019/3/27 11:11
  */
-public class ServletMapping {
-    private String servletName;
+class ServletMapping {
     private String url;
-    private String address;
-
-    public ServletMapping(String servletName, String url, String address) {
-        this.servletName = servletName;
+    private Class clazz;
+    
+    ServletMapping(String url, Class clazz) {
         this.url = url;
-        this.address = address;
+        this.clazz = clazz;
     }
-
-    public String getServletName() {
-        return servletName;
-    }
-
-    public void setServletName(String servletName) {
-        this.servletName = servletName;
-    }
-
-    public String getUrl() {
+    
+    String getUrl() {
         return url;
     }
-
-    public void setUrl(String url) {
-        this.url = url;
+    
+    Class getClazz() {
+        return clazz;
     }
-
-    public String getAddress() {
-        return address;
-    }
-
-    public void setAddress(String address) {
-        this.address = address;
-    }
+    
 }

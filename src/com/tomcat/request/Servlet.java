@@ -1,4 +1,4 @@
-package com.tomcat;
+package com.tomcat.request;
 
 /**
  * @author wuyuan
@@ -7,11 +7,14 @@ package com.tomcat;
  * @date 2019/3/27 10:58
  */
 public interface Servlet {
-
-    void doGet(Request request,Response response);
-    void doPost(Request request,Response response);
-
-    default void service(Request request,Response response){
+    
+    void init();
+    
+    void doGet(Request request, Response response);
+    
+    void doPost(Request request, Response response);
+    
+    default void service(Request request, Response response) {
         String GET = "GET";
         String POST = "POST";
         if (GET.equalsIgnoreCase(request.getMethod())) {
@@ -20,5 +23,5 @@ public interface Servlet {
             this.doPost(request, response);
         }
     }
-
+    
 }

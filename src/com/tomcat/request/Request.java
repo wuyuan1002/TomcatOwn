@@ -1,4 +1,4 @@
-package com.tomcat;
+package com.tomcat.request;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -24,30 +24,6 @@ public class Request {
             if ((len = inputStream.read(bytes)) != -1) {
                 this.allHttpRequest = new String(bytes,0,len);
             }
-
-
-//            StringBuilder stringBuilder = new StringBuilder();
-//            while ((len = inputStream.read(bytes)) != -1){
-//                if (bytes.length == 0) {
-//                    break;
-//                }
-//                stringBuilder.append(new String(bytes,0,len));
-//            }
-//            this.allHttpRequest = stringBuilder.toString();
-
-
-//            String line;
-//            StringBuilder stringBuilder = new StringBuilder();
-//            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream, "utf-8"));
-//            while ((line = bufferedReader.readLine()) != null) {
-//                if (line.length() == 0) {
-//                    break;
-//                }
-//                stringBuilder.append(line).append("\r\n");
-//            }
-//            this.allHttpRequest = stringBuilder.toString();
-
-
         } catch (IOException e) {
             e.printStackTrace();
         }

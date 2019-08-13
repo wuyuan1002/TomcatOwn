@@ -1,5 +1,9 @@
 package com.tomcat;
 
+import com.tomcat.request.Request;
+import com.tomcat.request.Response;
+import com.tomcat.request.Servlet;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -7,97 +11,114 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 /**
  * @author wuyuan
  * @version 1.0
- * @description 描述:
- * @date 2019/3/27 11:10
+ * @date 2019/3/27
  */
 public class Tomcat {
-    private int port = 7070;
-    private Map<String, String> servletUrl = new HashMap<>();
-
-    public Tomcat() {}
-
+    
+    //默认端口号
+    private int port = 8088;
+    
+    //存放请求地址和servlet的Class对象的的映射
+    private final Map<String, Class> servletUrl = new HashMap<>();
+    
+    //存放已创建的servlet，确保每个servlet只创建一个
+    private final Map<String, Servlet> servletMap = new HashMap<>();
+    
+    public Tomcat() {
+    }
+    
     public Tomcat(int port) {
         this.port = port;
     }
-
-    public void initServletMapping() {
-        for (ServletMapping servletMapping : ServletMappingConfig.servletMappingConfig) {
-            this.servletUrl.put(servletMapping.getUrl(), servletMapping.getAddress());
-        }
+    
+    private void initServletMapping() {
+        ServletMappingConfig.servletMappingConfig.forEach(s -> this.servletUrl.put(s.getUrl(), s.getClazz()));
     }
-
-    public void dispatch(Socket socket) {
+    
+    private Servlet initServlet(String address) {
+        Servlet servlet;
+        //如果处理该请求的servlet还没有被创建则创建它，否则直接从servletMap中获取
+        if ((servlet = this.servletMap.get(address)) == null) {
+            try {
+                //加锁防止有多个线程同时创建同一个servlet
+                synchronized (this.servletMap) {
+                    //双重if判断 -- 可参考懒汉式单例模式的实现(也是双重if判断)
+                    if ((servlet = this.servletMap.get(address)) == null) {
+                        //创建servlet,此处主动使用该类，所以类会被初始化
+                        Class servletClass = this.servletUrl.get(address);
+                        servlet = (Servlet) servletClass.newInstance();
+                        //调用servlet的init()方法 -- 只在servlet被创建时调用一次
+                        servlet.init();
+                        //将创建的servlet添加到servletMap中
+                        this.servletMap.put(address, servlet);
+                    }
+                }
+            } catch (InstantiationException | IllegalAccessException e) {
+                e.printStackTrace();
+            }
+        }
+        return servlet;
+    }
+    
+    private void dispatch(Socket socket) {
         InputStream inputStream = null;
         OutputStream outputStream = null;
         try {
+            //获取客户端连接的输入输出流
             inputStream = socket.getInputStream();
             outputStream = socket.getOutputStream();
         } catch (IOException e) {
             e.printStackTrace();
         }
+        //创建request对象，在里面获取http请求信息
         Request request = new Request(inputStream);
-        String address = this.servletUrl.get(request.getUrl());
-        if (address == null){
-            System.out.println("&&&&&&&&&&&&&&&&&&&&&&&请求的路径 "+request.getUrl()+" 不存在&&&&&&&&&&&&&&&&&&&&&&&&&&&&&");
-            try {
-                socket.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+        Class clazz = this.servletUrl.get(request.getUrl());
+        if (clazz == null) {
+            System.err.println("------- 请求的路径 " + request.getUrl() + " 不存在 -------");
+            return;
         }
+        //创建response对象
         Response response = new Response(outputStream);
+        //获取处理该请求的servlet对象
+        Servlet servlet = this.initServlet(request.getUrl());
+        //调用servlet的service方法处理请求
+        servlet.service(request, response);
         try {
-            //反射
-            Class servletClass = Class.forName(address);
-            Servlet servlet = (Servlet) servletClass.newInstance();
-            servlet.service(request, response);
-        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
+            socket.close();
+        } catch (IOException e) {
             e.printStackTrace();
-        } finally {
-            try {
-                socket.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
         }
     }
-
+    
     public void start() {
-        System.out.println("Tomcat is started ...");
         initServletMapping();
         ServerSocket serverSocket = null;
+        ThreadPoolExecutor threadPoolExecutor = null;
         try {
             serverSocket = new ServerSocket(this.port);
-
+            threadPoolExecutor = new ThreadPoolExecutor(3, 5, 3, TimeUnit.SECONDS, new LinkedBlockingQueue<>(5));
+            System.err.println("Tomcat is started ...");
             while (true) {
+                //获取客户端连接，获取一个就交给一个线程处理，主线程继续监听端口，获取新连接
                 Socket socket = serverSocket.accept();
-                ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(3,
-                        5, 3,
-                        TimeUnit.SECONDS, new ArrayBlockingQueue<>(5));
                 threadPoolExecutor.execute(() -> dispatch(socket));
             }
-//            dispatch(socket);
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
             try {
                 serverSocket.close();
+                threadPoolExecutor.shutdown();
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
     }
-
-
-    public static void main(String[] args) {
-        new Tomcat().start();
-    }
-
 }
