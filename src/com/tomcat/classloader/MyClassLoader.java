@@ -42,7 +42,7 @@ public class MyClassLoader extends ClassLoader {
     @Override
     protected Class<?> findClass(String className) throws ClassNotFoundException {
         
-        System.err.println("============ My ClassLoader Name : " + this.classLoaderName + " === Loaded Class Name : " + className + " ============");
+        System.err.println(this.classLoaderName + " --> className: " + className);
         
         //获取类的字节码数据
         byte[] data = this.loadClassData(className);
@@ -51,6 +51,27 @@ public class MyClassLoader extends ClassLoader {
         return super.defineClass(className, data, 0, data.length);
     }
     
+    @Override
+    public Class<?> loadClass(String name) throws ClassNotFoundException {
+        //首先判断是否已被当前类加载器加载
+        Class<?> clazz = findLoadedClass(name);
+        if (clazz == null) {
+            //交给父类加载器加载
+            if (name.endsWith(".tomcat.request.Servlet")
+                    ||name.endsWith(".tomcat.request.MyAnnotation")
+                    ||name.endsWith(".tomcat.request.Request")
+                    ||name.endsWith(".tomcat.request.Response")
+                    || name.startsWith("java.")
+                    || name.startsWith("sun.")
+                    || name.startsWith("javax.")) {
+                clazz = super.loadClass(name);
+            } else {
+                //否则自己加载
+                clazz = this.findClass(name);
+            }
+        }
+        return clazz;
+    }
     
     //根据类的名字(如com.jvm.classloader.MyClassLoader)，获取到类的字节码数据
     private byte[] loadClassData(String className) {

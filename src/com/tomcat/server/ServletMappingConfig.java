@@ -1,6 +1,7 @@
 package com.tomcat.server;
 
 import com.tomcat.Run;
+import com.tomcat.classloader.MyClassLoader;
 import com.tomcat.request.MyAnnotation;
 import com.tomcat.request.Servlet;
 
@@ -8,7 +9,9 @@ import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 配置哪个url访问哪个servlet
@@ -22,6 +25,10 @@ class ServletMappingConfig {
     //存放所有servlet的请求路径和Class对象的映射
     static List<ServletMapping> servletMappingConfig = new ArrayList<>();
     
+    //存放每一个web应用的类加载器
+    static Map<String, ClassLoader> classLoaderMap = new HashMap<>();
+    
+    //存储tomcat所在文件夹的上级文件夹
     private static ThreadLocal<String> THREADLOCAL = new ThreadLocal<>();
     
     static {
@@ -39,11 +46,14 @@ class ServletMappingConfig {
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
+        //将应用类加载器存到classLoaderMap中,方便后面使用
+        classLoaderMap.put(path, ClassLoader.getSystemClassLoader());
         //调用此方法后，所有tomcat上层文件夹中的类都被加载了，但没有被初始化，在有请求时第一次实例化servlet时初始化
         findAndDefineServlet(new File(path));
+        //将线程上下文类加载器设置成应用类加载器
+        Thread.currentThread().setContextClassLoader(ClassLoader.getSystemClassLoader());
         //删除threadlocal中的数据
         THREADLOCAL.remove();
-        
     }
     
     //递归加载所有servlet
@@ -54,8 +64,10 @@ class ServletMappingConfig {
             String allClassName = new File(THREADLOCAL.get()).getName() + "." +
                     src.toString().replace(THREADLOCAL.get() + "\\", "")
                             .replace("\\", ".").replace(".class", "");
+            //获取类名
+            String className = allClassName.substring(allClassName.lastIndexOf(".")).substring(1);
             try {
-                //使用线程上下文类加载器加载servlet -- 这样的话所有的类都会在tomcat启动时被加载，但没有被初始化
+                //使用当前的线程上下文类加载器加载servlet -- 这样的话所有的类都会在tomcat启动时被加载，但没有被初始化
                 Class servletClass = Thread.currentThread().getContextClassLoader().loadClass(allClassName);
                 //如果类实现了Servlet接口并且类上面有 MyAnnotation 注解的话就说明这是一个servlet，否则忽略
                 if (Servlet.class.isAssignableFrom(servletClass) && servletClass.isAnnotationPresent(MyAnnotation.class)) {
@@ -63,23 +75,42 @@ class ServletMappingConfig {
                     MyAnnotation ann = (MyAnnotation) servletClass.getAnnotation(MyAnnotation.class);
                     //获取该servlet的访问路径
                     String url = ann.url().startsWith("/") ? ann.url() : "/" + ann.url();
-                    //获取类名
-                    String className = allClassName.substring(allClassName.lastIndexOf("."));
+                    
                     //把servlet的请求路径和Class对象映射存到list中
                     servletMappingConfig.add(new ServletMapping(url, servletClass));
-                    System.out.println("servlet: " + allClassName);
                 }
             } catch (ClassNotFoundException e) {
                 e.printStackTrace();
             }
         } else {
+            
+            try {
+                String path = URLDecoder.decode(src.toString(), "utf-8");
+                //如果该文件夹是tomcat的同级文件夹,就认为它是一个独立的web应用,就为它新创建一个类加载器
+                if (URLDecoder.decode(src.getParent(), "utf-8").equals(THREADLOCAL.get())) {
+                    MyClassLoader classLoader;
+                    //如果原来没有,则先创建一个
+                    if ((classLoader = (MyClassLoader) classLoaderMap.get(path)) == null) {
+                        classLoader = new MyClassLoader(ClassLoader.getSystemClassLoader(), "classLoaderName: " + src.toString());
+                        classLoader.setPath(new File(THREADLOCAL.get()).getParent() + "\\");
+                        classLoaderMap.put(path, classLoader);
+                    }
+                    Thread.currentThread().setContextClassLoader(classLoader);
+                    
+                } else if (path.equals(THREADLOCAL.get())) {
+                    //如果文件夹是tomcat的上级文件夹,则使用系统类加载器,这里的东西每一个web应用都可以使用
+                    Thread.currentThread().setContextClassLoader(classLoaderMap.get(THREADLOCAL.get()));
+                }
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+            
             /*
              * 因为扫描的是被编译过的.class文件而不是.java文件,里面一定有.class文件,所以文件夹
              * 一定不会是空文件夹,因为只有原来文件夹里有.java文件才会被编译生成含有.class文件的文件夹
              *
-             * 所以这个if条件一定是true
+             * 所以下面这个if条件一定是true
              */
-            
             //获取文件夹下所有的文件和文件夹
             File[] files;
             if ((files = src.listFiles()) != null) {
