@@ -58,9 +58,9 @@ public class MyClassLoader extends ClassLoader {
         if (clazz == null) {
             //交给父类加载器加载
             if (name.endsWith(".tomcat.request.Servlet")
-                    ||name.endsWith(".tomcat.request.MyAnnotation")
-                    ||name.endsWith(".tomcat.request.Request")
-                    ||name.endsWith(".tomcat.request.Response")
+                    || name.endsWith(".tomcat.request.MyAnnotation")
+                    || name.endsWith(".tomcat.request.Request")
+                    || name.endsWith(".tomcat.request.Response")
                     || name.startsWith("java.")
                     || name.startsWith("sun.")
                     || name.startsWith("javax.")) {
