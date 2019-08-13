@@ -1,4 +1,4 @@
-package com.tomcat;
+package com.tomcat.server;
 
 /**
  * 存储要访问的servlet的信息的实体类

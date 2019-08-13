@@ -1,4 +1,4 @@
-package com.tomcat;
+package com.tomcat.server;
 
 import com.tomcat.request.MyAnnotation;
 import com.tomcat.request.Servlet;

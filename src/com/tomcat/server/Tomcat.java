@@ -1,4 +1,4 @@
-package com.tomcat;
+package com.tomcat.server;
 
 import com.tomcat.request.Request;
 import com.tomcat.request.Response;
