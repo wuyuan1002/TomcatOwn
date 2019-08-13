@@ -1,5 +1,6 @@
 package com.tomcat.server;
 
+import com.tomcat.Run;
 import com.tomcat.request.MyAnnotation;
 import com.tomcat.request.Servlet;
 
@@ -29,7 +30,7 @@ class ServletMappingConfig {
          */
         
         //获取tomcat所在文件夹的上级文件夹
-        String path = new File(Tomcat.class.getResource("").getPath()).getParent();
+        String path = new File(Run.class.getResource("").getPath()).getParent();
         try {
             //使用 utf-8 对路径进行编码
             path = URLDecoder.decode(path, "utf-8");
@@ -66,6 +67,7 @@ class ServletMappingConfig {
                     String className = allClassName.substring(allClassName.lastIndexOf("."));
                     //把servlet的请求路径和Class对象映射存到list中
                     servletMappingConfig.add(new ServletMapping(url, servletClass));
+                    System.out.println("servlet: " + allClassName);
                 }
             } catch (ClassNotFoundException e) {
                 e.printStackTrace();
