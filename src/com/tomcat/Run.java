@@ -9,6 +9,6 @@ import com.tomcat.server.Tomcat;
  */
 public class Run {
     public static void main(String[] args) {
-        new Tomcat().start();
+        Tomcat.run();
     }
 }

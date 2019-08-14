@@ -48,7 +48,7 @@ public class Tomcat {
         if ((servlet = this.servletMap.get(address)) == null) {
             try {
                 //加锁防止有多个线程同时创建同一个servlet
-                synchronized (this.servletMap) {
+                synchronized (this) {
                     //双重if判断 -- 可参考懒汉式单例模式的实现(也是双重if判断)
                     if ((servlet = this.servletMap.get(address)) == null) {
                         //创建servlet,此处主动使用该类，所以类会被初始化
@@ -104,8 +104,10 @@ public class Tomcat {
         try {
             serverSocket = new ServerSocket(this.port);
             threadPoolExecutor = new ThreadPoolExecutor(3, 5, 3, TimeUnit.SECONDS, new LinkedBlockingQueue<>(5));
-            System.out.println("---------------------");
-            System.err.println("Tomcat is started ...\r\n");
+            synchronized (this) {
+                System.out.println("---------------------");
+                System.err.println("Tomcat is started ...\r\n");
+            }
             while (true) {
                 //获取客户端连接，获取一个就交给一个线程处理，主线程继续监听端口，获取新连接
                 Socket socket = serverSocket.accept();
@@ -121,5 +123,8 @@ public class Tomcat {
                 e.printStackTrace();
             }
         }
+    }
+    public static void run(){
+        new Tomcat().start();
     }
 }

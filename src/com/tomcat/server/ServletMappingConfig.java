@@ -124,7 +124,7 @@ class ServletMappingConfig {
             if ((files = src.listFiles()) != null) {
                 for (File file : files) {
                     //排除掉tomcat文件夹 -- 这是tomcat，里面肯定不会有servlet
-                    if (!file.toString().endsWith("tomcat")) {
+                    if (!"tomcat".equals(file.getName())) {
                         findAndDefineServlet(file);
                     }
                 }
