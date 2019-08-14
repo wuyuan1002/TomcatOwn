@@ -9,9 +9,9 @@ package com.tomcat.server;
  */
 class ServletMapping {
     private String url;
-    private Class clazz;
+    private Class<?> clazz;
     
-    ServletMapping(String url, Class clazz) {
+    ServletMapping(String url, Class<?> clazz) {
         this.url = url;
         this.clazz = clazz;
     }
@@ -20,7 +20,7 @@ class ServletMapping {
         return url;
     }
     
-    Class getClazz() {
+    Class<?> getClazz() {
         return clazz;
     }
     

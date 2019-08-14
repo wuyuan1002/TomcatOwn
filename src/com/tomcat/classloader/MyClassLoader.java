@@ -4,6 +4,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.time.LocalTime;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * classloader
@@ -22,6 +25,9 @@ public class MyClassLoader extends ClassLoader {
     
     //定义字节码文件结尾名 -- 字节码文件都是以 .class 结尾的
     private final String fileExtension = ".class";
+    
+    //保存所有当前类加载器加载的类的Class对象
+    private final Map<String, Class<?>> loadedClassMap = new HashMap<>();
     
     public MyClassLoader(String classLoaderName) {
         super();
@@ -42,7 +48,7 @@ public class MyClassLoader extends ClassLoader {
     @Override
     protected Class<?> findClass(String className) throws ClassNotFoundException {
         
-        System.err.println(this.classLoaderName + " --> className: " + className);
+        System.err.println(LocalTime.now() + ":类加载器:" + this.classLoaderName + "-加载servlet: " + className);
         
         //获取类的字节码数据
         byte[] data = this.loadClassData(className);
@@ -109,5 +115,17 @@ public class MyClassLoader extends ClassLoader {
     
     public String getPath() {
         return path;
+    }
+    
+    public String getClassLoaderName() {
+        return classLoaderName;
+    }
+    
+    public void setClassLoaderName(String classLoaderName) {
+        this.classLoaderName = classLoaderName;
+    }
+    
+    public Map<String, Class<?>> getLoadedClassMap() {
+        return loadedClassMap;
     }
 }

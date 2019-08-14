@@ -104,7 +104,8 @@ public class Tomcat {
         try {
             serverSocket = new ServerSocket(this.port);
             threadPoolExecutor = new ThreadPoolExecutor(3, 5, 3, TimeUnit.SECONDS, new LinkedBlockingQueue<>(5));
-            System.err.println("Tomcat is started ...");
+            System.out.println("---------------------");
+            System.err.println("Tomcat is started ...\r\n");
             while (true) {
                 //获取客户端连接，获取一个就交给一个线程处理，主线程继续监听端口，获取新连接
                 Socket socket = serverSocket.accept();

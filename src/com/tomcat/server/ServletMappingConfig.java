@@ -8,6 +8,7 @@ import com.tomcat.request.Servlet;
 import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -26,7 +27,7 @@ class ServletMappingConfig {
     static List<ServletMapping> servletMappingConfig = new ArrayList<>();
     
     //存放每一个web应用的类加载器
-    static Map<String, ClassLoader> classLoaderMap = new HashMap<>();
+    private static Map<String, ClassLoader> classLoaderMap = new HashMap<>();
     
     //存储tomcat所在文件夹的上级文件夹
     private static ThreadLocal<String> THREADLOCAL = new ThreadLocal<>();
@@ -60,15 +61,22 @@ class ServletMappingConfig {
     private static void findAndDefineServlet(File src) {
         //如果是文件，则说明可能是个servlet
         if (src.isFile()) {
+            //如果文件不是以.class结尾,则说明该文件不是类,直接忽略跳过
+            if (!src.toString().endsWith(".class")) {
+                return;
+            }
             //获取全类名
             String allClassName = new File(THREADLOCAL.get()).getName() + "." +
                     src.toString().replace(THREADLOCAL.get() + "\\", "")
                             .replace("\\", ".").replace(".class", "");
-            //获取类名
-            String className = allClassName.substring(allClassName.lastIndexOf(".")).substring(1);
             try {
                 //使用当前的线程上下文类加载器加载servlet -- 这样的话所有的类都会在tomcat启动时被加载，但没有被初始化
-                Class servletClass = Thread.currentThread().getContextClassLoader().loadClass(allClassName);
+                ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+                Class servletClass = classLoader.loadClass(allClassName);
+                //如果当前类加载器是自定义类加载器,也就是当前类加载器是每一个独立的web应用的类加载器,则将加载到到的Class对象都存到类加载器的map里
+                if (classLoader instanceof MyClassLoader) {
+                    ((MyClassLoader) classLoader).getLoadedClassMap().put(allClassName, servletClass);
+                }
                 //如果类实现了Servlet接口并且类上面有 MyAnnotation 注解的话就说明这是一个servlet，否则忽略
                 if (Servlet.class.isAssignableFrom(servletClass) && servletClass.isAnnotationPresent(MyAnnotation.class)) {
                     //获取servlet上面的 MyAnnotation 注解
@@ -83,7 +91,6 @@ class ServletMappingConfig {
                 e.printStackTrace();
             }
         } else {
-            
             try {
                 String path = URLDecoder.decode(src.toString(), "utf-8");
                 //如果该文件夹是tomcat的同级文件夹,就认为它是一个独立的web应用,就为它新创建一个类加载器
@@ -91,14 +98,15 @@ class ServletMappingConfig {
                     MyClassLoader classLoader;
                     //如果原来没有,则先创建一个
                     if ((classLoader = (MyClassLoader) classLoaderMap.get(path)) == null) {
-                        classLoader = new MyClassLoader(ClassLoader.getSystemClassLoader(), "classLoaderName: " + src.toString());
-                        classLoader.setPath(new File(THREADLOCAL.get()).getParent() + "\\");
+                        String f = new File(THREADLOCAL.get()).getParent();
+                        classLoader = new MyClassLoader(ClassLoader.getSystemClassLoader(), src.toString().replace(f + "\\", "").replace("\\", "."));
+                        classLoader.setPath(f + "\\");
                         classLoaderMap.put(path, classLoader);
+                        System.out.println(LocalTime.now() + ":创建类加载器:" + classLoader.getClassLoaderName() + ",加载" + path + "下的所有servlet");
                     }
                     Thread.currentThread().setContextClassLoader(classLoader);
-                    
                 } else if (path.equals(THREADLOCAL.get())) {
-                    //如果文件夹是tomcat的上级文件夹,则使用系统类加载器,这里的东西每一个web应用都可以使用
+                    //如果是tomcat的上级文件夹中的类,则使用系统类加载器,这里的东西每一个web应用都可以使用
                     Thread.currentThread().setContextClassLoader(classLoaderMap.get(THREADLOCAL.get()));
                 }
             } catch (UnsupportedEncodingException e) {
