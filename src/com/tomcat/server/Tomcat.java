@@ -7,6 +7,7 @@ import com.tomcat.request.Servlet;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.reflect.Constructor;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashMap;
@@ -53,14 +54,23 @@ public class Tomcat {
                     if ((servlet = this.servletMap.get(address)) == null) {
                         //创建servlet,此处主动使用该类，所以类会被初始化
                         Class servletClass = this.servletUrl.get(address);
+                        
+                        //1.直接使用Class对象的newInstance方法实例化对象，只能使用默认的公共无参构造方法
                         servlet = (Servlet) servletClass.newInstance();
+                        
+                        //2.先使用Class对象获取到指定的Constructor构造方法对象，再用构造方法对象实例化对象，这可以使用所有的构造方法
+                        // Constructor constructor = servletClass.getDeclaredConstructor();
+                        // constructor.setAccessible(true);
+                        // servlet = (Servlet) constructor.newInstance();
+                        
+                        
                         //调用servlet的init()方法 -- 只在servlet被创建时调用一次
                         servlet.init();
                         //将创建的servlet添加到servletMap中
                         this.servletMap.put(address, servlet);
                     }
                 }
-            } catch (InstantiationException | IllegalAccessException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }
