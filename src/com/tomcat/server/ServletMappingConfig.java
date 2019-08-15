@@ -71,12 +71,7 @@ class ServletMappingConfig {
                             .replace("\\", ".").replace(".class", "");
             try {
                 //使用当前的线程上下文类加载器加载servlet -- 这样的话所有的类都会在tomcat启动时被加载，但没有被初始化
-                ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-                Class servletClass = classLoader.loadClass(allClassName);
-                //如果当前类加载器是自定义类加载器,也就是当前类加载器是每一个独立的web应用的类加载器,则将加载到到的Class对象都存到类加载器的map里
-                if (classLoader instanceof MyClassLoader) {
-                    ((MyClassLoader) classLoader).getLoadedClassMap().put(allClassName, servletClass);
-                }
+                Class servletClass = Thread.currentThread().getContextClassLoader().loadClass(allClassName);
                 //如果类实现了Servlet接口并且类上面有 MyAnnotation 注解的话就说明这是一个servlet，否则忽略
                 if (Servlet.class.isAssignableFrom(servletClass) && servletClass.isAnnotationPresent(MyAnnotation.class)) {
                     //获取servlet上面的 MyAnnotation 注解

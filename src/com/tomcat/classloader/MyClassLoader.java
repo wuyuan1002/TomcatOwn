@@ -54,7 +54,12 @@ public class MyClassLoader extends ClassLoader {
         byte[] data = this.loadClassData(className);
         
         //生成类的Class对象，此时，类就被加载了
-        return super.defineClass(className, data, 0, data.length);
+        Class clazz = super.defineClass(className, data, 0, data.length);
+        
+        //将加载的class对象保存到当前类加载器的map中
+        this.loadedClassMap.put(className, clazz);
+        
+        return clazz;
     }
     
     @Override
@@ -70,7 +75,7 @@ public class MyClassLoader extends ClassLoader {
                     || name.startsWith("java.")
                     || name.startsWith("sun.")
                     || name.startsWith("javax.")) {
-                clazz = super.loadClass(name);
+                clazz = this.getParent().loadClass(name);
             } else {
                 //否则自己加载
                 clazz = this.findClass(name);
