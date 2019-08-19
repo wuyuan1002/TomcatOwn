@@ -97,7 +97,7 @@ public class Tomcat {
         //创建response对象
         Response response = new Response(outputStream);
         //获取处理该请求的servlet对象
-        Servlet servlet = this.initServlet(request.getUrl());
+        Servlet servlet = initServlet(request.getUrl());
         //调用servlet的service方法处理请求
         servlet.service(request, response);
         try {
