@@ -19,7 +19,11 @@ public class Wuyuan1Servlet implements Servlet {
     }
     @Override
     public void doGet(Request request, Response response) {
-        response.write("wuyuan1");
+        // response.write("wuyuan1");
+        // response.write("<h1>我的第一个网页</h1><p>这里标记第一个段落</p>");
+        response.write("<p style=\"color: red; margin-left: 200px;font-size: 50pt;\">\n" +
+                "This is a paragraph\n" +
+                "</p>");
     }
 
     @Override
