@@ -6,18 +6,39 @@ package com.tomcat.request;
  */
 public interface Servlet {
     
+    /**
+     * servlet初始化时执行
+     */
     void init();
     
+    /**
+     * get请求时执行
+     *
+     * @param request
+     * @param response
+     */
     void doGet(Request request, Response response);
     
+    /**
+     * post请求时执行
+     *
+     * @param request
+     * @param response
+     */
     void doPost(Request request, Response response);
     
+    /**
+     * 根据请求类型执行对应方法
+     *
+     * @param request
+     * @param response
+     */
     default void service(Request request, Response response) {
-        String GET = "GET";
-        String POST = "POST";
-        if (GET.equalsIgnoreCase(request.getMethod())) {
+        final String get = "GET";
+        final String post = "POST";
+        if (get.equalsIgnoreCase(request.getMethod())) {
             this.doGet(request, response);
-        } else if (POST.equalsIgnoreCase(request.getMethod())) {
+        } else if (post.equalsIgnoreCase(request.getMethod())) {
             this.doPost(request, response);
         }
     }

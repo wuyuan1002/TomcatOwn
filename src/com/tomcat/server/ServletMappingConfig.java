@@ -2,7 +2,7 @@ package com.tomcat.server;
 
 import com.tomcat.Run;
 import com.tomcat.classloader.MyClassLoader;
-import com.tomcat.request.MyAnnotation;
+import com.tomcat.request.deployUrl;
 import com.tomcat.request.Servlet;
 
 import java.io.File;
@@ -71,10 +71,10 @@ class ServletMappingConfig {
             try {
                 //使用当前的线程上下文类加载器加载servlet -- 这样的话所有的类都会在tomcat启动时被加载，但没有被初始化
                 Class servletClass = Thread.currentThread().getContextClassLoader().loadClass(allClassName);
-                //如果类实现了Servlet接口并且类上面有 MyAnnotation 注解的话就说明这是一个servlet，否则忽略
-                if (Servlet.class.isAssignableFrom(servletClass) && servletClass.isAnnotationPresent(MyAnnotation.class)) {
-                    //获取servlet上面的 MyAnnotation 注解
-                    MyAnnotation ann = (MyAnnotation) servletClass.getAnnotation(MyAnnotation.class);
+                //如果类实现了Servlet接口并且类上面有 deployUrl 注解的话就说明这是一个servlet，否则忽略
+                if (Servlet.class.isAssignableFrom(servletClass) && servletClass.isAnnotationPresent(deployUrl.class)) {
+                    //获取servlet上面的 deployUrl 注解
+                    deployUrl ann = (deployUrl) servletClass.getAnnotation(deployUrl.class);
                     //获取该servlet的访问路径
                     String url = ann.url().startsWith("/") ? ann.url() : "/" + ann.url();
                     

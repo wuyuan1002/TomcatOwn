@@ -9,7 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * classloader
+ * 类加载器，只加载各个项目的servlet，公共部分交由它的父类加载器系统类加载器加载
  *
  * @author wuyuan
  * @date 2019/7/24
@@ -68,7 +68,7 @@ public class MyClassLoader extends ClassLoader {
         if (clazz == null) {
             //交给父类加载器加载
             if (name.endsWith(".tomcat.request.Servlet")
-                    || name.endsWith(".tomcat.request.MyAnnotation")
+                    || name.endsWith(".tomcat.request.deployUrl")
                     || name.endsWith(".tomcat.request.Request")
                     || name.endsWith(".tomcat.request.Response")
                     || name.startsWith("java.")

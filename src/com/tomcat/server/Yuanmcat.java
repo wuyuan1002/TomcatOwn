@@ -7,7 +7,6 @@ import com.tomcat.request.Servlet;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.lang.reflect.Constructor;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashMap;
@@ -20,7 +19,7 @@ import java.util.concurrent.TimeUnit;
  * @author wuyuan
  * @date 2019/3/27
  */
-public class Tomcat {
+public class Yuanmcat {
     
     //默认端口号
     private int port = 8088;
@@ -31,10 +30,10 @@ public class Tomcat {
     //存放已创建的servlet，确保每个servlet只创建一个
     private final Map<String, Servlet> servletMap = new HashMap<>();
     
-    public Tomcat() {
+    public Yuanmcat() {
     }
     
-    public Tomcat(int port) {
+    public Yuanmcat(int port) {
         this.port = port;
     }
     
@@ -134,6 +133,6 @@ public class Tomcat {
         }
     }
     public static void run(){
-        new Tomcat().start();
+        new Yuanmcat().start();
     }
 }

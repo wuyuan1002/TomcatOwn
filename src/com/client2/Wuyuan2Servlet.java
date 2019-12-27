@@ -1,6 +1,6 @@
-package com.client;
+package com.client2;
 
-import com.tomcat.request.MyAnnotation;
+import com.tomcat.request.deployUrl;
 import com.tomcat.request.Request;
 import com.tomcat.request.Response;
 import com.tomcat.request.Servlet;
@@ -9,7 +9,7 @@ import com.tomcat.request.Servlet;
  * @author wuyuan
  * @date 2019/3/27
  */
-@MyAnnotation(url = "/wuyuan2")
+@deployUrl(url = "/wuyuan2")
 public class Wuyuan2Servlet implements Servlet {
     
     @Override

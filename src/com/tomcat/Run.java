@@ -1,6 +1,6 @@
 package com.tomcat;
 
-import com.tomcat.server.Tomcat;
+import com.tomcat.server.Yuanmcat;
 
 /**
  * @author wuyuan
@@ -8,6 +8,6 @@ import com.tomcat.server.Tomcat;
  */
 public class Run {
     public static void main(String[] args) {
-        Tomcat.run();
+        Yuanmcat.run();
     }
 }
