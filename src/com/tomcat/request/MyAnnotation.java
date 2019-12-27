@@ -9,7 +9,6 @@ import java.lang.annotation.Target;
  * 注解
  *
  * @author wuyuan
- * @version 1.0
  * @date 2019/8/12
  */
 @Target(ElementType.TYPE)

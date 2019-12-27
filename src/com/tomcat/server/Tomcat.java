@@ -18,7 +18,6 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * @author wuyuan
- * @version 1.0
  * @date 2019/3/27
  */
 public class Tomcat {

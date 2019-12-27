@@ -6,10 +6,10 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 
 /**
+ * 通过Tomcat传过来的客户端socket的输入流获取HTTP协议的请求数据
+ *
  * @author wuyuan
- * @version 1.0
- * @description 描述:通过Tomcat传过来的客户端socket的输入流获取HTTP协议的请求数据
- * @date 2019/3/27 10:31
+ * @date 2019/3/27
  */
 public class Request {
     private String url;

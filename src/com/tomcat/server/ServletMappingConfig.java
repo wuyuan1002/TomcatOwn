@@ -18,8 +18,7 @@ import java.util.Map;
  * 配置哪个url访问哪个servlet
  *
  * @author wuyuan
- * @version 1.0
- * @date 2019/3/27 11:13
+ * @date 2019/3/27
  */
 class ServletMappingConfig {
     

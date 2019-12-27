@@ -4,10 +4,10 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 /**
+ * 将数据返回给客户端
+ *
  * @author wuyuan
- * @version 1.0
- * @description 描述:将数据返回给客户端
- * @date 2019/3/27 10:51
+ * @date 2019/3/27
  */
 public class Response {
     private OutputStream outputStream;

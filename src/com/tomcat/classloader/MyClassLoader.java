@@ -13,7 +13,6 @@ import java.util.Map;
  *
  * @author wuyuan
  * @date 2019/7/24
- * @version 1.0
  */
 public class MyClassLoader extends ClassLoader {
     

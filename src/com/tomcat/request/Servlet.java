@@ -2,9 +2,7 @@ package com.tomcat.request;
 
 /**
  * @author wuyuan
- * @version 1.0
- * @description 描述:
- * @date 2019/3/27 10:58
+ * @date 2019/3/27
  */
 public interface Servlet {
     

@@ -7,8 +7,7 @@ import com.tomcat.request.Servlet;
 
 /**
  * @author wuyuan
- * @version 1.0
- * @date 2019/3/27 12:07
+ * @date 2019/3/27
  */
 @MyAnnotation(url = "/wuyuan1")
 public class Wuyuan1Servlet implements Servlet {
